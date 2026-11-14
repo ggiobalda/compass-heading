@@ -1,0 +1,16 @@
+dont use variable - signals are better as they're always sintetizzabili. if you use variable in the project you'll get asked why instead of signals.
+
+use constants when needed, not signals that remain unchanged (error)
+
+no multi clock domains - project is doable with a single clock signal
+
+even though the technical part is the most fun (you do something) the report is the part on which you are graded and evalutated (especially in workplace). note also that the assignment is a contract between you and the client, so every request is bonding - you can't just not do it, or you won't be graded (paid) fully.
+
+the easier (to read) the report the better it is.
+
+liability is fundamental - you can obv use something not made by you (or we'll be reinventing the wheel) but you're liable for it. so must know it and understand it deeply, cause a problem with it is your responsability.
+
+in the report code quality > quantity - so just a few snippets but with high logical value. same works for assertions, they must be quantifiable (eg, it works bettere -> it has a X% performance boost).
+
+test normal condition and limit cases - no need to test every possibile inout but the most significants.
+
