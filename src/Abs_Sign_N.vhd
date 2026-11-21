@@ -1,10 +1,10 @@
--- Abs_sign
+-- Abs_Sign_N
 -- Extracts the sign bit and unsigned absolute value of an N-bit C2 input
 library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
-entity Abs_sign is
+entity Abs_Sign_N is
     generic (
         N : positive := 9
     );
@@ -15,8 +15,7 @@ entity Abs_sign is
     );
 end entity;
 
-architecture beh of Abs_sign is
-    
+architecture beh of Abs_Sign_N is
     -- absolute value as an unsigned number
     signal abs_val : unsigned(N-1 downto 0);
 

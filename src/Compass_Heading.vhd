@@ -5,18 +5,14 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 
 entity Compass_Heading is
-    generic (
-        M : positive := 8; -- division quotient bits
-        K : positive := 10 -- angle output bits
-    );
     port (
-        clk    : in  std_logic;                     -- system clock
-        reset  : in  std_logic;                     -- asynchronous reset, active low
-        a      : in  std_logic_vector(7 downto 0);  -- Y magnetic field intensity
-        a_bias : in  std_logic;                     -- Y bias enable
-        b      : in  std_logic_vector(7 downto 0);  -- X magnetic field intensity
-        b_bias : in  std_logic;                     -- X bias enable
-        theta  : out std_logic_vector(K-1 downto 0) -- angle direction
+        clk    : in  std_logic;                    -- system clock
+        reset  : in  std_logic;                    -- asynchronous reset, active low
+        a      : in  std_logic_vector(7 downto 0); -- Y magnetic field intensity
+        a_bias : in  std_logic;                    -- Y bias enable
+        b      : in  std_logic_vector(7 downto 0); -- X magnetic field intensity
+        b_bias : in  std_logic;                    -- X bias enable
+        theta  : out std_logic_vector(10 downto 0) -- angle direction
     );
 end entity;
 
@@ -49,6 +45,31 @@ architecture struct of Compass_Heading is
         );
     end component;
 
+    component Abs_Sign_N is
+        generic (
+            N : positive := 9
+        );
+        port (
+            c2  : in  std_logic_vector(N-1 downto 0);
+            mag : out std_logic_vector(N-2 downto 0);
+            sgn : out std_logic
+        );
+    end component;
+
+    component Div_Prep_N is
+        generic (
+            N : positive := 8
+        );
+        port (
+            in_1     : in  std_logic_vector(N-1 downto 0);
+            in_2     : in  std_logic_vector(N-1 downto 0);
+            minor    : out std_logic_vector(N-1 downto 0);
+            major    : out std_logic_vector(N-1 downto 0);
+            swapped  : out std_logic;
+            zero_err : out std_logic
+        );
+    end component;
+
     ---------------------------
     -- SIGNALS DECLARATIONS
     ---------------------------
@@ -67,6 +88,18 @@ architecture struct of Compass_Heading is
     -- calibrated inputs signals
     signal a_cal : std_logic_vector(8 downto 0);
     signal b_cal : std_logic_vector(8 downto 0);
+
+    -- module and sign of inputs signals
+    signal a_abs : std_logic_vector(7 downto 0);
+    signal a_sgn : std_logic;
+    signal b_abs : std_logic_vector(7 downto 0);
+    signal b_sgn : std_logic;
+
+    -- numerator, denominator, swap and zero_div signals for division block
+    signal num      : std_logic_vector(7 downto 0);
+    signal den      : std_logic_vector(7 downto 0);
+    signal swap     : std_logic;
+    signal zero_div : std_logic;
 
 begin
 
@@ -146,6 +179,45 @@ begin
             op2  => b_bias_ext,
             diff => b_cal
         );
+    
+    -- combinational logic to extract module and sign
+    ABS_SGN_A : Abs_Sign_N
+        generic map (
+            N => 9
+        )
+        port map (
+            c2  => a_cal,
+            mag => a_abs,
+            sgn => a_sgn
+        );
+    
+    ABS_SGN_B : Abs_Sign_N
+        generic map (
+            N => 9
+        )
+        port map (
+            c2  => b_cal,
+            mag => b_abs,
+            sgn => b_sgn
+        );
+    
+    -- combinational logic to prepare for division
+    DIV_PREP : Div_Prep_N
+        generic map (
+            N => 8
+        )
+        port map (
+            in_1     => a_abs,
+            in_2     => b_abs,
+            minor    => num,
+            major    => den,
+            swapped  => swap,
+            zero_err => zero_div
+        );
+    
+    -- testbench
+    theta <= (others => '0');
+
 end architecture;
 
     
