@@ -28,7 +28,7 @@ architecture struct of Compass_Heading_tb1 is
     signal a_bias_ext : std_logic                     := '0';
     signal b_ext      : std_logic_vector(7 downto 0)  := (others => '0');
     signal b_bias_ext : std_logic                     := '0';
-    signal theta_ext  : std_logic_vector(10 downto 0) := (others => '0');
+    signal theta_ext  : std_logic_vector(10 downto 0);
     signal testing    : boolean                       := true;
 
 begin

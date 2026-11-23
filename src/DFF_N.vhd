@@ -8,9 +8,9 @@ entity DFF_N is
         N : positive := 8
     );
     port (
-        clk     : in  std_logic;                        -- system clock
-        a_rst_n : in  std_logic;                        -- asynchronous reset, active low
-        en      : in  std_logic;                        -- enable, active high
+        clk     : in  std_logic;                      -- system clock
+        a_rst_n : in  std_logic;                      -- asynchronous reset, active low
+        en      : in  std_logic;                      -- enable, active high
         d       : in  std_logic_vector(N-1 downto 0); -- data input
         q       : out std_logic_vector(N-1 downto 0)  -- data output
     );

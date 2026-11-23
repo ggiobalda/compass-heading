@@ -11,7 +11,7 @@ entity Abs_Sign_N is
     port (
         c2  : in  std_logic_vector(N-1 downto 0); -- C2 number
         mag : out std_logic_vector(N-2 downto 0); -- magnitude
-        sgn : out std_logic -- sign
+        sgn : out std_logic                       -- sign
     );
 end entity;
 
@@ -23,6 +23,6 @@ begin
 
     abs_val  <= unsigned(c2) when c2(N-1) = '0' else unsigned(-signed(c2));
     sgn      <= c2(N-1);
-    mag      <= std_logic_vector(abs_val);
+    mag      <= std_logic_vector(abs_val(N-2 downto 0));
 
 end architecture;
