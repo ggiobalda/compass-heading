@@ -33,9 +33,13 @@ begin
             inv_out => inv_den
         );
     
+    -- the edge case with num=den (45 deg angle) overflows 
+    -- the 9 fractional bits by setting the 17th to '1'
     prod <= unsigned(num) * unsigned(inv_den);
 
-    -- discard the 8 unused integer bits (24..17) and 8 lower guard bits (7..0) to extract the 9-bit fractional quotient
-    quot <= std_logic_vector(prod(16 downto 8));
+    -- discard the 8 unused integer bits (24..17) and 8 lower
+    -- guard bits (7..0) to extract the 9-bit fractional quotient
+    quot <= (others => '1') when prod(17) = '1' else -- 45 deg edge case
+        std_logic_vector(prod(16 downto 8));         -- other angles
 
 end architecture;

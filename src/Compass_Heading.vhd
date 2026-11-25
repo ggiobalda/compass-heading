@@ -65,8 +65,8 @@ architecture struct of Compass_Heading is
             in_2     : in  std_logic_vector(N-1 downto 0);
             minor    : out std_logic_vector(N-1 downto 0);
             major    : out std_logic_vector(N-1 downto 0);
-            swapped  : out std_logic;
-            zero_err : out std_logic
+            swap     : out std_logic;
+            zero_div : out std_logic
         );
     end component;
 
@@ -120,15 +120,16 @@ architecture struct of Compass_Heading is
     signal b_abs : std_logic_vector(7 downto 0);
     signal b_sgn : std_logic;
 
-    -- numerator, denominator, swap and zero_div signals for division block. quot is the output
+    -- division block signals
     signal num      : std_logic_vector(7 downto 0);
     signal den      : std_logic_vector(7 downto 0);
     signal swap     : std_logic;
     signal zero_div : std_logic;
     signal quot     : std_logic_vector(8 downto 0);
 
-    -- LUT output, angle in the first octant
-    signal angle_oct : std_logic_vector(7 downto 0);
+    -- arctan LUT and angle reconstruct signals
+    signal angle_oct  : std_logic_vector(7 downto 0);
+    signal theta_comb : std_logic_vector(10 downto 0); 
 
 begin
 
@@ -240,8 +241,8 @@ begin
             in_2     => b_abs,
             minor    => num,
             major    => den,
-            swapped  => swap,
-            zero_err => zero_div
+            swap     => swap,
+            zero_div => zero_div
         );
 
     -- divider block, quot = num/den
@@ -266,7 +267,20 @@ begin
             swap       => swap,
             sgn_y      => a_sgn,
             sgn_x      => b_sgn,
-            full_angle => theta
+            full_angle => theta_comb
+        );
+    
+    -- output barrier register
+    REG_THETA : DFF_N
+        generic map (
+            N => 11
+        )
+        port map (
+            clk     => clk,
+            a_rst_n => reset,
+            en      => zero_div,
+            d       => theta_comb,
+            q       => theta
         );
 
 end architecture;

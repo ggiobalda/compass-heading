@@ -1,4 +1,6 @@
 -- Compass_Heading_tb1
+-- Used to test correct input calibration and
+-- combinational logic up to the division module
 library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
@@ -51,7 +53,7 @@ begin
     begin
         if rising_edge(clk) then
             case t is
-                -- 1. Release active-low reset & load initial biases: a_cal = +20, b_cal = -30
+                -- release reset and set biases: a=+20, b=-30
                 when 1 =>
                     reset      <= '1';
                     a_ext      <= std_logic_vector(to_signed(20, 8));
@@ -59,50 +61,47 @@ begin
                     b_ext      <= std_logic_vector(to_signed(-30, 8));
                     b_bias_ext <= '1';
 
-                -- 2. Zero vector after calibration: diff_a = 0, diff_b = 0 -> zero_err = '1'
+                -- set a and b values same as bias -> calibrated signals should be 0
                 when 2 =>
                     a_bias_ext <= '0';
                     b_bias_ext <= '0';
                     a_ext      <= std_logic_vector(to_signed(20, 8));
                     b_ext      <= std_logic_vector(to_signed(-30, 8));
 
-                -- 3. Positive diffs, |diff_a| < |diff_b| (no swap):
-                --    diff_a = 60 - 20 = +40, diff_b = 90 - (-30) = +120 -> num = 40, den = 120
+                -- set both calibrated values positive with no swap 
                 when 4 =>
                     a_ext      <= std_logic_vector(to_signed(60, 8));
                     b_ext      <= std_logic_vector(to_signed(90, 8));
 
-                -- 4. Negative diffs, |diff_a| > |diff_b| (swap):
-                --    diff_a = -100 - 20 = -120, diff_b = -70 - (-30) = -40 -> num = 40, den = 120
+                -- set both calibrated values negative with swap
                 when 6 =>
                     a_ext      <= std_logic_vector(to_signed(-100, 8));
                     b_ext      <= std_logic_vector(to_signed(-70, 8));
 
-                -- 5. Equal magnitudes & mixed signs (45 deg case):
-                --    diff_a = 100 - 20 = +80, diff_b = -110 - (-30) = -80 -> num = 80, den = 80
+                -- set same absolute value with different signs
                 when 8 =>
                     a_ext      <= std_logic_vector(to_signed(100, 8));
                     b_ext      <= std_logic_vector(to_signed(-110, 8));
 
-                -- 6. Reload max opposite biases: a_cal = +127, b_cal = -128
+                -- set bias values to the edges (-128 and +127)
                 when 10 =>
                     a_ext      <= std_logic_vector(to_signed(127, 8));
                     a_bias_ext <= '1';
                     b_ext      <= std_logic_vector(to_signed(-128, 8));
                     b_bias_ext <= '1';
 
-                -- 7. Full-scale extremes (+-255):
-                --    diff_a = -128 - 127 = -255, diff_b = 127 - (-128) = +255 -> num = 255, den = 255
+                -- set input values to get the extremes of calibrated ones (+-255)
                 when 11 =>
                     a_bias_ext <= '0';
                     b_bias_ext <= '0';
                     a_ext      <= std_logic_vector(to_signed(-128, 8));
                     b_ext      <= std_logic_vector(to_signed(127, 8));
 
-                -- 8. Verify active-low reset clears registers
+                -- async reset
                 when 13 =>
                     reset      <= '0';
 
+                -- test ending
                 when 15 =>
                     testing    <= false;
 

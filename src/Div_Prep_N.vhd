@@ -14,8 +14,8 @@ entity Div_Prep_N is
         in_2     : in  std_logic_vector(N-1 downto 0); -- second unsigned input
         minor    : out std_logic_vector(N-1 downto 0); -- smaller number output 
         major    : out std_logic_vector(N-1 downto 0); -- bigger muber output
-        swapped  : out std_logic;                      -- '1' if in_1 > in_2, meaning they have been swapped
-        zero_err : out std_logic                       -- '1' if in_1 = in_2 = 0
+        swap     : out std_logic;                      -- '1' if in_1 > in_2, meaning they have been swapped
+        zero_div : out std_logic                       -- '1' if in_1 = in_2 = 0
     );
 end entity;
 
@@ -34,7 +34,7 @@ begin
     major    <= (others => '0') when is_zero = '1' else
                 in_1            when is_swap = '1' else
                 in_2;
-    swapped  <= is_swap;
-    zero_err <= is_zero;
+    swap     <= is_swap;
+    zero_div <= is_zero;
 
 end architecture;
