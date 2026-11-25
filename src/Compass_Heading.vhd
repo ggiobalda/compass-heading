@@ -70,6 +70,31 @@ architecture struct of Compass_Heading is
         );
     end component;
 
+    component Divider is
+        port (
+            num  : in  std_logic_vector(7 downto 0); 
+            den  : in  std_logic_vector(7 downto 0); 
+            quot : out std_logic_vector(8 downto 0)  
+        );
+    end component;
+
+    component arctan_lut_512_8bit is
+        port (
+            address    : in  std_logic_vector(8 downto 0);
+            arctan_out : out std_logic_vector(7 downto 0)
+        );
+    end component;
+
+    component Angle_Reconstruct is
+        port (
+            base_angle : in  std_logic_vector(7 downto 0);
+            swap       : in  std_logic;
+            sgn_y      : in  std_logic;
+            sgn_x      : in  std_logic;
+            full_angle : out std_logic_vector(10 downto 0)
+        );
+    end component;    
+
     ---------------------------
     -- SIGNALS DECLARATIONS
     ---------------------------
@@ -95,11 +120,15 @@ architecture struct of Compass_Heading is
     signal b_abs : std_logic_vector(7 downto 0);
     signal b_sgn : std_logic;
 
-    -- numerator, denominator, swap and zero_div signals for division block
+    -- numerator, denominator, swap and zero_div signals for division block. quot is the output
     signal num      : std_logic_vector(7 downto 0);
     signal den      : std_logic_vector(7 downto 0);
     signal swap     : std_logic;
     signal zero_div : std_logic;
+    signal quot     : std_logic_vector(8 downto 0);
+
+    -- LUT output, angle in the first octant
+    signal angle_oct : std_logic_vector(7 downto 0);
 
 begin
 
@@ -214,9 +243,31 @@ begin
             swapped  => swap,
             zero_err => zero_div
         );
+
+    -- divider block, quot = num/den
+    DIV : Divider
+        port map (
+            num  => num,
+            den  => den,
+            quot => quot
+        );
+
+    -- arctan lookup, angle_oct = arctan(quot)
+    ARCTAN_LUT : arctan_lut_512_8bit
+        port map (
+            address    => quot,
+            arctan_out => angle_oct
+        );
     
-    -- testbench
-    theta <= (others => '0');
+    -- full-scale angle reconstruction
+    ANGLE_REC : Angle_Reconstruct
+        port map (
+            base_angle => angle_oct,
+            swap       => swap,
+            sgn_y      => a_sgn,
+            sgn_x      => b_sgn,
+            full_angle => theta
+        );
 
 end architecture;
 
