@@ -52,14 +52,20 @@ begin
     begin
         if rising_edge(clk) then
             case t is
-                -- release reset and set biases to 0 (already tested them in tb1)
+                -- release reset and set biases to 0
                 when 1 =>
-                    reset <= '1';
+                    reset      <= '1';
+                    a_ext      <= std_logic_vector(to_signed(0, 8));
+                    b_ext      <= std_logic_vector(to_signed(0, 8));
+                    a_bias_ext <= '1';
+                    b_bias_ext <= '1';
 
-                -- num=0 den=100 -> 0.0 (quot = 0)
+                -- release biases, num=0 den=100 -> 0.0 (quot = 0)
                 when 2 =>
-                    a_ext <= std_logic_vector(to_signed(0, 8));
-                    b_ext <= std_logic_vector(to_signed(100, 8));
+                    a_ext      <= std_logic_vector(to_signed(0, 8));
+                    b_ext      <= std_logic_vector(to_signed(100, 8));
+                    a_bias_ext <= '0';
+                    b_bias_ext <= '0';
 
                 -- num=1 den=4 -> 0.25 (quot = 128)
                 when 4 =>
@@ -81,30 +87,39 @@ begin
                     a_ext <= std_logic_vector(to_signed(40, 8));
                     b_ext <= std_logic_vector(to_signed(120, 8));
 
+                -- loads bias = -128 so magnitudes up to 255 are reachable
+                when 11 =>
+                    a_ext      <= std_logic_vector(to_signed(-128, 8));
+                    b_ext      <= std_logic_vector(to_signed(-128, 8));
+                    a_bias_ext <= '1';
+                    b_bias_ext <= '1';
+
                 -- smallest non-zero ratio: num=1 den=255 -> quot = 2
                 when 12 =>
-                    a_ext <= std_logic_vector(to_signed(1, 8));
-                    b_ext <= std_logic_vector(to_signed(255, 8));
+                    a_ext      <= std_logic_vector(to_signed(-127, 8));
+                    b_ext      <= std_logic_vector(to_signed(127, 8));
+                    a_bias_ext <= '0';
+                    b_bias_ext <= '0';
 
                 -- largest strictly < 1 ratio: num=254 den=255 -> quot = 509
                 when 14 =>
-                    a_ext <= std_logic_vector(to_signed(254, 8));
-                    b_ext <= std_logic_vector(to_signed(255, 8));
+                    a_ext <= std_logic_vector(to_signed(126, 8));
+                    b_ext <= std_logic_vector(to_signed(127, 8));
 
-                -- 45 deg diagonal with rounded-up LUT[3]=43691 (checks prod(17) saturation -> quot = 511)
+                -- 45 deg diagonal with rounded-up LUT[3]=43691: num=den=3 -> quot = 511
                 when 16 =>
-                    a_ext <= std_logic_vector(to_signed(3, 8));
-                    b_ext <= std_logic_vector(to_signed(3, 8));
+                    a_ext <= std_logic_vector(to_signed(-125, 8));
+                    b_ext <= std_logic_vector(to_signed(-125, 8));
 
-                -- 45-deg diagonal (as above) but at max scale: num=255 den=255 -> quot = 511
+                -- 45-deg diagonal at max scale: num=den=255 -> quot = 511
                 when 18 =>
-                    a_ext <= std_logic_vector(to_signed(255, 8));
-                    b_ext <= std_logic_vector(to_signed(255, 8));
+                    a_ext <= std_logic_vector(to_signed(127, 8));
+                    b_ext <= std_logic_vector(to_signed(127, 8));
 
-                -- division by zero check: num=0 den=0 -> zero_div = '1', quot = 0
+                -- division by zero check: num=den=0 -> zero_div = '1', quot = 0
                 when 20 =>
-                    a_ext <= std_logic_vector(to_signed(0, 8));
-                    b_ext <= std_logic_vector(to_signed(0, 8));
+                    a_ext <= std_logic_vector(to_signed(-128, 8));
+                    b_ext <= std_logic_vector(to_signed(-128, 8));
 
                 -- async reset
                 when 22 =>
